@@ -1,7 +1,19 @@
 #include<WiFi.h>
 #include<WiFiClient.h>
+#include <ESP32Servo.h>
 #include<String.h>
 WiFiClient client;
+
+class Slot{ 
+  public:
+  int trig,echo,dist;
+  Slot(int trigPin,int echoPin){
+    trig = trigPin;
+    echo = echoPin;
+  }
+};
+
+
 
 const int trigPin4 = 4;
 const int echoPin34 = 34;
@@ -18,6 +30,8 @@ const int echoPin39 = 39;
 const int trigPin15 = 15;
 const int echoPin18 = 18;
 
+Slot s[] = {Slot(trigPin4,echoPin34),Slot(trigPin5,echoPin35),Slot(trigPin13,echoPin36),Slot(trigPin14,echoPin39),Slot(trigPin15,echoPin18)};
+
 //const int trigPin19 = 19;
 //const int echoPin21 = 21;
 
@@ -32,7 +46,7 @@ void connectWifi();
 void checkWifi();
 void connectToServer();
 void checkServer();
-//void mainProcess(WiFiClient client);
+void mainProcess(WiFiClient client);
 String getCommand(String s);
 String getOption(String s);
 void handleRequest(WiFiClient client,char com,char opt);
@@ -46,22 +60,7 @@ void setup() {
 }
 
 void loop() {
-//    String dat = "";
-//    while(client.available())
-//    {
-//      dat += client.readString();
-//    }
-//    if(dat.length() > 0 )
-//    {
-//      Serial.println("Server Requested");
-//      char str[1][50];
-//      dat.toLowerCase();
-//      dat.toCharArray(str[0],50);
-//      Serial.println(dat);
-//      handleRequest(client,str[0][0],str[0][1]);
-//    }
-//    checkWifi();
-//    checkServer();
+
 }
 
 void connectToServer()
@@ -120,20 +119,17 @@ void handleRequest(WiFiClient client,char com,char opt){
 
 String readUltrasonic(){
   Serial.println("Reading Sensors");
-  int d[5];
-  d[0] = calculateDistance(trigPin4,echoPin34); 
-  d[1] = calculateDistance(trigPin5,echoPin35); 
-  d[2] = calculateDistance(trigPin13,echoPin36); 
-  d[3] = calculateDistance(trigPin14,echoPin39);
-  d[4] = calculateDistance(trigPin15,echoPin18); 
-//  d[5] = calculateDistance(trigPin19,echoPin21);
+  for(int i=0;i<5;i++)
+  {
+    s[i].dist = calculateDistance(s[i].trig,s[i].echo);
+  }
 
   String r="";
-  r+=d[0];
+  r+=s[0].dist;
   for(int i=1;i<5;i++)
   {
     r+=",";
-    r+=d[i];
+    r+=s[i].dist;
   }
   Serial.println(r);
 
@@ -144,24 +140,12 @@ void initPins(){
   Serial.println("Initializing Pins");
 
   pinMode(2,OUTPUT);
+
+  for(int i=0;i<5;i++){
+    pinMode(s[i].trig,OUTPUT);
+    pinMode(s[i].echo,INPUT);
+  }
   
-  pinMode(trigPin4, OUTPUT);
-  pinMode(echoPin34, INPUT);
-
-  pinMode(trigPin5, OUTPUT);
-  pinMode(echoPin35, INPUT);
-
-  pinMode(trigPin13, OUTPUT);
-  pinMode(echoPin36, INPUT);
-
-  pinMode(trigPin14, OUTPUT);
-  pinMode(echoPin39, INPUT);
-
-  pinMode(trigPin15, OUTPUT);
-  pinMode(echoPin18, INPUT);
-
-//  pinMode(trigPin19, OUTPUT);
-//  pinMode(echoPin21, INPUT);
 }
 
 int calculateDistance(int trig,int echo){
