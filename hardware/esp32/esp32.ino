@@ -1,6 +1,7 @@
 #include<WiFi.h>
 #include<WiFiClient.h>
 #include<String.h>
+WiFiClient client;
 
 const int trigPin4 = 4;
 const int echoPin34 = 34;
@@ -17,12 +18,12 @@ const int echoPin39 = 39;
 const int trigPin15 = 15;
 const int echoPin18 = 18;
 
-const int trigPin19 = 19;
-const int echoPin21 = 21;
+//const int trigPin19 = 19;
+//const int echoPin21 = 21;
 
 const char* ssid = "TP-Link_2.4";
 const char* pass = "tplink@2.4hz";
-const char* host = "192.168.1.47";
+const char* host = "192.168.0.105";
 
 int calculateDistance(int trig,int echo);
 void initPins();
@@ -31,7 +32,7 @@ void connectWifi();
 void checkWifi();
 void connectToServer();
 void checkServer();
-void mainProcess(WiFiClient client);
+//void mainProcess(WiFiClient client);
 String getCommand(String s);
 String getOption(String s);
 void handleRequest(WiFiClient client,char com,char opt);
@@ -45,25 +46,40 @@ void setup() {
 }
 
 void loop() {
-  
- 
+//    String dat = "";
+//    while(client.available())
+//    {
+//      dat += client.readString();
+//    }
+//    if(dat.length() > 0 )
+//    {
+//      Serial.println("Server Requested");
+//      char str[1][50];
+//      dat.toLowerCase();
+//      dat.toCharArray(str[0],50);
+//      Serial.println(dat);
+//      handleRequest(client,str[0][0],str[0][1]);
+//    }
+//    checkWifi();
+//    checkServer();
 }
 
 void connectToServer()
 {
   Serial.println("Connecting to Server");
-  WiFiClient client;
   bool c = client.connect(host,8000);
   while(!c){
     Serial.print("*");
     c = client.connect(host,8000);
-    delay(1000);
+    digitalWrite(2,HIGH);
+    delay(500);
+    digitalWrite(2,LOW);
+    delay(500);
   }
   Serial.println();
   Serial.println("Server Connected");
   digitalWrite(2,HIGH);
   mainProcess(client);
-  
 }
 
 void mainProcess(WiFiClient client){
@@ -83,7 +99,10 @@ void mainProcess(WiFiClient client){
       Serial.println(dat);
       handleRequest(client,str[0][0],str[0][1]);
     }
+    checkWifi();
+    checkServer();
   }
+  
 }
 
 void handleRequest(WiFiClient client,char com,char opt){
@@ -101,17 +120,17 @@ void handleRequest(WiFiClient client,char com,char opt){
 
 String readUltrasonic(){
   Serial.println("Reading Sensors");
-  int d[6];
+  int d[5];
   d[0] = calculateDistance(trigPin4,echoPin34); 
   d[1] = calculateDistance(trigPin5,echoPin35); 
   d[2] = calculateDistance(trigPin13,echoPin36); 
   d[3] = calculateDistance(trigPin14,echoPin39);
   d[4] = calculateDistance(trigPin15,echoPin18); 
-  d[5] = calculateDistance(trigPin19,echoPin21);
+//  d[5] = calculateDistance(trigPin19,echoPin21);
 
   String r="";
   r+=d[0];
-  for(int i=1;i<6;i++)
+  for(int i=1;i<5;i++)
   {
     r+=",";
     r+=d[i];
@@ -141,8 +160,8 @@ void initPins(){
   pinMode(trigPin15, OUTPUT);
   pinMode(echoPin18, INPUT);
 
-  pinMode(trigPin19, OUTPUT);
-  pinMode(echoPin21, INPUT);
+//  pinMode(trigPin19, OUTPUT);
+//  pinMode(echoPin21, INPUT);
 }
 
 int calculateDistance(int trig,int echo){
@@ -160,7 +179,6 @@ int calculateDistance(int trig,int echo){
 }
 
 void connectWifi(){
-  digitalWrite(2,HIGH);
   WiFi.mode(WIFI_STA);
   Serial.println("Connecting to Wifi");
   Serial.print("SSID = ");
@@ -170,16 +188,35 @@ void connectWifi(){
   while( WiFi.status() != WL_CONNECTED )
   {
     Serial.print("*");
-    delay(100);
+    digitalWrite(2,HIGH);
+    delay(500);
+    digitalWrite(2,LOW);
+    delay(500);
   }
   Serial.println();
   if(WiFi.status() == WL_CONNECTED){
     Serial.println("Wifi Connected");
     Serial.print("IP = ");
     Serial.println(WiFi.localIP());
-    digitalWrite(2,LOW);
+    
   }
 }
 
-void checkWifi(){}
-void checkServer(){}
+void checkWifi(){
+  if(WiFi.status() == WL_DISCONNECTED)
+  {
+    digitalWrite(2,LOW);
+    Serial.println("Wifi connection lost. Retrying connection!");
+    connectWifi();
+    connectToServer();
+  }
+}
+void checkServer(){
+  if(!client.connected())
+  {
+    digitalWrite(2,LOW);
+    Serial.println("Connection to server lost. Retrying connection!");
+    client.stop();
+    connectToServer();
+  }
+}
