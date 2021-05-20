@@ -1,14 +1,19 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-var cors = require("cors");
-var app = express();
-require("dotenv").config();
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+const cors = require("cors");
+const app = express();
+const server_debug = require("debug")("server");
+const db_debug = require("debug")("database");
+const hw_debug = require("debug")("hardware");
+const connectDb = require("./utility/connectToDatabase");
+const { dropGates } = require("./utility/gateControl");
+const Reservation = require("./model/reservation");
+const generatecode = require("./utility/generateCode");
 
-// view engine setup
-
+connectDb();
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -23,10 +28,23 @@ const corsOpts = {
 };
 app.use(cors(corsOpts));
 
+app.get("/", (req, res) => {
+  res.send({
+    api: "Smart-Parking-System",
+    version: "1.0.0",
+    status: "working",
+  });
+});
+
 app.get("/test", (req, res) => {
-  var obj = {};
+  var obj = [];
   for (let i = 0; i < 6; i++)
-    obj[i] = { sensor_id: i + 1, value: i % 2 == 0 ? true : false };
+    obj.push({
+      spot_number: i + 1,
+      value: i % 2 == 0 ? true : false,
+      reserved: i % 2 == 0 ? true : false,
+    });
+  server_debug(obj[0]);
   res.send(obj);
 });
 
@@ -48,7 +66,7 @@ app.get("/sensorStatus", async (req, res) => {
               if (sensor_status[i] > 15 || sensor_status[i] == 0)
                 sensor_status[i] = false;
               else sensor_status[i] = true;
-              obj[i] = { sensor_id: i + 1, value: sensor_status[i] };
+              obj[i] = { spot_number: i + 1, value: sensor_status[i] };
             }
             resolve();
           }
@@ -57,25 +75,33 @@ app.get("/sensorStatus", async (req, res) => {
     });
   } catch (e) {
     res.send({ error: "Sensors not responding" });
+    hw_debug("ESP failed to return sensor status");
   }
   res.send(obj);
 });
 
-app.get("/reserve/:spot", async (req, res) => {
-  spot = req.params.spot;
-  try {
-    await new Promise((resolve, reject) => {
-      tcp_con.write(`2${spot}`);
-      tcp_con.on("data", async (d) => {
-        console.log(d);
-        res.send("reserved");
-      });
-      tcp_con.on("error", (e) => {
-        reject(e);
-      });
+app.get("/reserve", async (req, res) => {
+  spot = req.query.spot;
+  time = req.query.time;
+  var reserve_doc = await Reservation.find({ spot_number: spot });
+  server_debug(reserve_doc);
+  if (reserve_doc.code != null) {
+    return res.send({
+      status: "reserved",
+      message: "Spot already reserved",
     });
-  } catch (e) {
-    res.send({ error: "Hardware Error!" });
+  }
+
+  var opr_res = await dropGates(spot);
+  if (opr_res) {
+    var code = generatecode();
+    await Reservation.updateOne(
+      { spot_number: spot },
+      { $set: { status: "reserved", code: code } }
+    );
+
+    //timeout to release reservation
+    res.send({ status: "ok", message: "Spot Reserved", code: code });
   }
 });
 

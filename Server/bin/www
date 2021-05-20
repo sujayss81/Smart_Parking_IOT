@@ -3,11 +3,12 @@
 /**
  * Module dependencies.
  */
-
+require("dotenv").config();
 var app = require("../app");
-var debug = require("debug")("server:server");
+var server_debug = require("debug")("server");
 var http = require("http");
-var tcp = require("net");
+const { startTcpServer } = require("../utility/tcpServer");
+startTcpServer();
 
 /**
  * Get port from environment and store in Express.
@@ -15,31 +16,6 @@ var tcp = require("net");
 
 var port = normalizePort(process.env.PORT);
 app.set("port", port);
-
-//TCP Server
-var tcp_server = tcp.createServer();
-
-tcp_server.on("connection", (con) => {
-  console.log("NEW connection");
-  global.tcp_con = con;
-
-  con.setEncoding("utf8");
-
-  con.on("close", (he) => {
-    if (he) {
-      console.log(he);
-    }
-    console.log("Connection closed");
-    tcp_con = null;
-  });
-
-  con.on("error", (e) => {
-    console.log(`Error Occured\n ${e}`);
-  });
-});
-tcp_server.listen(process.env.TCP_PORT, () => {
-  console.log(`TCP Server Started on port ${process.env.TCP_PORT}\n`);
-});
 
 /**
  * Create HTTP server.
@@ -108,5 +84,5 @@ function onError(error) {
 function onListening() {
   var addr = server.address();
   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
-  console.log("App Listening on " + bind);
+  server_debug(`Listening on ${bind}`);
 }
