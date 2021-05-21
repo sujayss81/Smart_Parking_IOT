@@ -2,6 +2,7 @@
     package="com.example.smart_parking_app">
    <application
         android:label="smart_parking_app"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
