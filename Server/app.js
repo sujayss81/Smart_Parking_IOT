@@ -84,24 +84,16 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/signup", async (req, res) => {
-  server_debug("req received");
-  server_debug(req.body);
-  return res.send("ok");
-  //decode req body to json
-  var body = JSON.parse(req.body);
-  //create mongoose object
-  var user = new User({});
-  //save doc
+  var { name, email, password, dob, gender } = req.body;
+  var user = new User({ name, email, password, dob, gender });
   await user
     .save()
     .then(() => {
-      //generate jwt token
-      var token = jwt.sign({ email: user_email }, process.env.JWT_SECRET);
+      var token = jwt.sign({ email: email }, process.env.JWT_SECRET);
       res.header({ "x-auth-token": token }).send({
         status: "ok",
         message: "registration successfull",
       });
-      //send token
     })
     .catch((ex) => {
       db_debug(ex);
