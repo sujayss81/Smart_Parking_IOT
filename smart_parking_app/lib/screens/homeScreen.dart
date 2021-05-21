@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (res.statusCode == 200) {
       token = res.headers['x-auth-token'];
       print(token);
+      prefs.setString('token', token);
       http.Response res2 = await http.get(Uri.parse('$hostUrl/me'),
           headers: {'x-auth-token': token, 'Content-Type': 'application/json'});
       if (res2.statusCode == 200) {

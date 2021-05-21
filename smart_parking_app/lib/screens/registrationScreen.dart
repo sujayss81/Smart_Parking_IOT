@@ -6,16 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-enum Gender{male,female}
+enum Gender { male, female }
 
 class RegistrationScreen extends StatefulWidget {
   String name;
   String email;
   String password;
   String dob = '';
-  String gender ;
-
-
+  String gender;
 
   static const id = 'registration_screen';
   @override
@@ -64,16 +62,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     initSharedPref();
   }
 
-  void registerUser(){
-    Map body={
-      'name' : widget.name,
-      'email' : widget.email,
-      'password' : widget.password,
-      'dob' : widget.dob,
-      'gender' : widget.gender,
+  void registerUser() {
+    Map body = {
+      'name': widget.name,
+      'email': widget.email,
+      'password': widget.password,
+      'dob': widget.dob,
+      'gender': widget.gender,
     };
     print(body);
-    postRequest(urlLabel: 'register',body: body);
+    postRequest(urlLabel: 'signup', body: body);
   }
 
   @override
@@ -122,7 +120,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-
               decoration: kInputDecoration.copyWith(hintText: 'Name'),
               keyboardType: TextInputType.name,
               onChanged: (value) {
@@ -133,7 +130,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-
               decoration: kInputDecoration.copyWith(hintText: 'Email'),
               keyboardType: TextInputType.emailAddress,
               onChanged: (value) {
@@ -144,7 +140,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-
               obscureText: true,
               decoration: kInputDecoration.copyWith(hintText: 'Password'),
               onChanged: (value) {
@@ -155,7 +150,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Padding(
             padding: const EdgeInsets.all(15.0),
             child: Row(
-
               children: [
                 Text('Date of Birth:'),
                 SizedBox(
@@ -166,7 +160,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   color: Colors.grey,
                   child: MaterialButton(
                     child: Text(
-                          dob,
+                      dob,
                     ),
                     onPressed: () {
                       showDatePicker(
@@ -189,30 +183,33 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(15.0),
-            child: Row(
-              children: [
-                Text(
-                  'Gender : '
-                ),
-                Radio(value: 'male', groupValue: widget.gender, onChanged: (value){
-                  setState(() {
-                    widget.gender = value;
-                  });
-                }),
-                Text('Male'),
-                SizedBox(
-                  width: 20.0,
-                ),
-                Radio(value: 'female', groupValue: widget.gender, onChanged: (value){
-                  setState(() {
-                    widget.gender = value;
-                  });
-                }),
-                Text('Female'),
-              ],
-            )
-          ),
+              padding: EdgeInsets.all(15.0),
+              child: Row(
+                children: [
+                  Text('Gender : '),
+                  Radio(
+                      value: 'male',
+                      groupValue: widget.gender,
+                      onChanged: (value) {
+                        setState(() {
+                          widget.gender = value;
+                        });
+                      }),
+                  Text('Male'),
+                  SizedBox(
+                    width: 20.0,
+                  ),
+                  Radio(
+                      value: 'female',
+                      groupValue: widget.gender,
+                      onChanged: (value) {
+                        setState(() {
+                          widget.gender = value;
+                        });
+                      }),
+                  Text('Female'),
+                ],
+              )),
           Padding(
             padding: const EdgeInsets.all(15.0),
             child: Material(
@@ -221,23 +218,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               elevation: 5.0,
               child: MaterialButton(
                 child: Text(
-                    'Register',
+                  'Register',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
-
                 ),
                 height: 40,
                 minWidth: 20,
                 onPressed: () {
                   registerUser();
-
                 },
               ),
             ),
           ),
-
         ],
       ),
     );
