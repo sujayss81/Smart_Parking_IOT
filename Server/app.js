@@ -5,13 +5,16 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
 const app = express();
+const jwt = require("jsonwebtoken");
 const server_debug = require("debug")("server");
 const db_debug = require("debug")("database");
 const hw_debug = require("debug")("hardware");
 const connectDb = require("./utility/connectToDatabase");
 const { dropGates } = require("./utility/gateControl");
 const Reservation = require("./model/reservation");
+const User = require("./model/user");
 const generatecode = require("./utility/generateCode");
+const auth = require("./middleware/auth");
 
 connectDb();
 app.use(logger("dev"));
@@ -24,7 +27,7 @@ const corsOpts = {
 
   methods: ["GET", "POST"],
 
-  allowedHeaders: ["Content-Type"],
+  allowedHeaders: ["Content-Type", "x-auth-token"],
 };
 app.use(cors(corsOpts));
 
@@ -34,6 +37,75 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     status: "working",
   });
+});
+
+app.get("/me", auth, async (req, res) => {
+  const email = req.body.decoded.email;
+  try {
+    var result = await User.find({ email: email }).select([
+      "-_id",
+      "-password",
+    ]);
+  } catch (ex) {
+    db_debug(result);
+  }
+  res.send({ status: "ok", message: "User Profile", body: result[0] });
+});
+
+app.post("/login", async (req, res) => {
+  if (req.body.email == null || req.body.password == null) {
+    return res
+      .status(400)
+      .send({ status: "failed", message: "Missing Parameters" });
+  }
+  var { email, password } = req.body;
+  try {
+    var result = await User.find({
+      email: email,
+      password: password,
+    }).countDocuments();
+  } catch {
+    (ex) => {
+      db_debug(ex);
+    };
+  }
+  if (result > 0) {
+    var token = jwt.sign({ email: email }, process.env.JWT_SECRET);
+    res.header({ "x-auth-token": token }).send({
+      status: "ok",
+      message: "Authentication successfull",
+    });
+  } else {
+    res.status(400).send({
+      status: "failed",
+      message: "Incorrect Email/Password",
+    });
+  }
+});
+
+app.post("/signup", async (req, res) => {
+  server_debug("req received");
+  server_debug(req.body);
+  return res.send("ok");
+  //decode req body to json
+  var body = JSON.parse(req.body);
+  //create mongoose object
+  var user = new User({});
+  //save doc
+  await user
+    .save()
+    .then(() => {
+      //generate jwt token
+      var token = jwt.sign({ email: user_email }, process.env.JWT_SECRET);
+      res.header({ "x-auth-token": token }).send({
+        status: "ok",
+        message: "registration successfull",
+      });
+      //send token
+    })
+    .catch((ex) => {
+      db_debug(ex);
+    });
 });
 
 app.get("/test", (req, res) => {
@@ -83,8 +155,11 @@ app.get("/sensorStatus", async (req, res) => {
 app.get("/reserve", async (req, res) => {
   spot = req.query.spot;
   time = req.query.time;
-  var reserve_doc = await Reservation.find({ spot_number: spot });
-  server_debug(reserve_doc);
+  try {
+    var reserve_doc = await Reservation.find({ spot_number: spot });
+  } catch (ex) {
+    db_debug(ex);
+  }
   if (reserve_doc.code != null) {
     return res.send({
       status: "reserved",
@@ -95,10 +170,14 @@ app.get("/reserve", async (req, res) => {
   var opr_res = await dropGates(spot);
   if (opr_res) {
     var code = generatecode();
-    await Reservation.updateOne(
-      { spot_number: spot },
-      { $set: { status: "reserved", code: code } }
-    );
+    try {
+      await Reservation.updateOne(
+        { spot_number: spot },
+        { $set: { status: "reserved", code: code } }
+      );
+    } catch (ex) {
+      db_debug(ex);
+    }
 
     //timeout to release reservation
     res.send({ status: "ok", message: "Spot Reserved", code: code });
