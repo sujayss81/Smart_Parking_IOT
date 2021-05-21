@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const hostUrl = 'http://sujayhome.ddns.net:4000';
+
 const kInputDecoration = InputDecoration(
   hintText: 'value',
   hintStyle: TextStyle(

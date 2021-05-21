@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:ui';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:smart_parking_app/constants.dart';
 import 'package:smart_parking_app/screens/registrationScreen.dart';
+import 'package:smart_parking_app/services/networking.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   static const id = 'home_screen';
@@ -15,6 +18,47 @@ class _HomeScreenState extends State<HomeScreen> {
   String password = '';
   final emailText = TextEditingController();
   final passwordText = TextEditingController();
+  SharedPreferences prefs;
+
+  void postRequest({String urlLabel, Map body}) async {
+    String sendingBody = jsonEncode(body);
+    print(sendingBody);
+    String token;
+    http.Response res = await http.post(Uri.parse('$hostUrl/$urlLabel'),
+        body: sendingBody, headers: {'Content-Type': 'application/json'});
+    if (res.statusCode == 200) {
+      token = res.headers['x-auth-token'];
+      print(token);
+      http.Response res2 = await http.get(Uri.parse('$hostUrl/me'),
+          headers: {'x-auth-token': token, 'Content-Type': 'application/json'});
+      if (res2.statusCode == 200) {
+        // print(res2);
+        print(res2.body);
+      } else if (res2.statusCode == 400) {
+        print('authentication problem');
+        // print(res.body);
+      } else {
+        print('server error');
+      }
+    } else if (res.statusCode == 400) {
+      print('post request authentication error');
+    } else {
+      print('post request server error');
+      print(res.statusCode);
+    }
+  }
+
+  void initSharedPref() async {
+    prefs = await SharedPreferences.getInstance();
+  }
+
+  void initState() {
+    super.initState();
+    initSharedPref();
+  }
+
+  // Networking net = new Networking();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,8 +122,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 40,
                   minWidth: 20,
                   onPressed: () {
-                    emailText.clear();
-                    passwordText.clear();
+                    // emailText.clear();
+                    // passwordText.clear();
+                    Map body = {'email': email, 'password': password};
+                    String token = prefs.getString('token');
+                    if (token == null) {
+                      postRequest(urlLabel: 'login', body: body);
+                    }
                   },
                 ),
               ),
