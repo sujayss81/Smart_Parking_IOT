@@ -33,7 +33,46 @@ class _HomeScreenState extends State<HomeScreen> {
     initSharedPref();
   }
 
-  // Networking net = new Networking();
+  void loginUser() async {
+    Map body = {'email': _email, 'password': _password};
+    // print(body);
+    String token = prefs.getString('token');
+    // print(token);
+    prefs.clear();
+    // String newTok = prefs.getString('token');
+    // print('new token = $newTok');
+    if (token == null) {
+      http.Response res = await net.postRequest(urlLabel: 'login', body: body);
+      if (res.statusCode == 200) {
+        token = res.headers['x-auth-token'];
+        print(token);
+        print('hello');
+        prefs.setString('token', token);
+        prefs.clear();
+        flag = false;
+      } else if (res.statusCode == 400) {
+        //add a toast specifying that username or password is incorrect
+        flag = true;
+        print('Authentication failed');
+      } else {
+        print('server error');
+        print(jsonDecode(res.body));
+        flag = true;
+      }
+    }
+    if (!flag) {
+      http.Response res2 =
+          await net.getRequest(urlLabel: 'me', token: token, params: '');
+      if (res2.statusCode == 200) {
+        // print(res2);
+        print(res2.body);
+        //write navigator push code here
+      } else {
+        print('server error');
+        print(jsonDecode(res2.body));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           hintText: 'Enter your email'),
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.emailAddress,
-                      // autovalidate: true,
                       validator: (String value) {
                         if (value.isEmpty) {
                           return 'Please enter your email';
@@ -97,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: kInputDecoration.copyWith(
                           hintText: 'Enter your password'),
                       textAlign: TextAlign.center,
-                      // autovalidate: true,
                       validator: (String value) {
                         if (value.isEmpty) {
                           return 'Please enter your password';
@@ -126,44 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () async {
                         // emailText.clear();
                         // passwordText.clear();
-                        print(_email);
-                        print(_password);
+                        // print(_email);
+                        // print(_password);
                         if (_formKey.currentState.validate()) {
-                          Map body = {'email': _email, 'password': _password};
-                          print(body);
-                          String token = prefs.getString('token');
-                          // prefs.clear();
-                          if (token == null) {
-                            http.Response res = await net.postRequest(
-                                urlLabel: 'login', body: body);
-                            if (res.statusCode == 200) {
-                              token = res.headers['x-auth-token'];
-                              print(token);
-                              prefs.setString('token', token);
-                              prefs.clear();
-                              flag = false;
-                            } else if (res.statusCode == 400) {
-                              //add a toast specifying that username or password is incorrect
-                              flag = true;
-                              print('Authenticaton failed');
-                            } else {
-                              print('server error');
-                              print(jsonDecode(res.body));
-                              flag = true;
-                            }
-                          }
-                          if (!flag) {
-                            http.Response res2 = await net.getRequest(
-                                urlLabel: 'me', token: token, params: '');
-                            if (res2.statusCode == 200) {
-                              // print(res2);
-                              print(res2.body);
-                              //write navigator push code here
-                            } else {
-                              print('server error');
-                              print(jsonDecode(res2.body));
-                            }
-                          }
+                          loginUser();
                         } else {
                           print("Incomplete fields");
                         }
