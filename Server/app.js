@@ -4,12 +4,10 @@
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
-const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
 const app = express();
 const jwt = require("jsonwebtoken");
-const joi = require("joi");
 
 //debuggers
 const server_debug = require("debug")("server");
@@ -18,7 +16,7 @@ const hw_debug = require("debug")("hardware");
 
 //custom functions
 const connectDb = require("./utility/connectToDatabase");
-const { dropGates } = require("./utility/gateControl");
+const { dropGates, raiseGates } = require("./utility/gateControl");
 const generatecode = require("./utility/generateCode");
 const { encrypt, compareHash } = require("./utility/hashing");
 const { signupSchema, loginSchema } = require("./utility/validator");
@@ -36,8 +34,7 @@ connectDb();
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "assets")));
 const corsOpts = {
   origin: "*",
 
@@ -50,7 +47,7 @@ app.use(cors(corsOpts));
 //-------------------------------------ROUTES-----------------------------------//
 // -------GET-------//
 
-app.get("/test", (req, res) => {
+app.get("/test", auth, (req, res) => {
   var obj = [];
   for (let i = 0; i < 6; i++)
     obj.push({
@@ -58,8 +55,7 @@ app.get("/test", (req, res) => {
       value: i % 2 == 0 ? true : false,
       reserved: i % 2 == 0 ? true : false,
     });
-  server_debug(obj[0]);
-  res.send(obj);
+  return res.send({ status: "ok", message: "Sensor status array", body: obj });
 });
 
 app.get("/", (req, res) => {
@@ -73,19 +69,21 @@ app.get("/", (req, res) => {
 app.get("/me", auth, async (req, res) => {
   const email = req.body.decoded.email;
   try {
-    var result = await User.find({ email: email }).select([
+    var result = await User.findOne({ email: email }).select([
       "-_id",
       "-password",
+      "-__v",
     ]);
   } catch (ex) {
     db_debug(result);
   }
-  res.send({ status: "ok", message: "User Profile", body: result[0] });
+  res.send({ status: "ok", message: "User Profile", body: result });
 });
 
-app.get("/sensorStatus", async (req, res) => {
+app.get("/sensorStatus", auth, async (req, res) => {
   var sensor_status;
-  var obj = {};
+  var tcp_con = global.tcpCon;
+  var obj = [];
   try {
     await new Promise((resolve, reject) => {
       tcp_con.write("1");
@@ -101,7 +99,17 @@ app.get("/sensorStatus", async (req, res) => {
               if (sensor_status[i] > 15 || sensor_status[i] == 0)
                 sensor_status[i] = false;
               else sensor_status[i] = true;
-              obj[i] = { spot_number: i + 1, value: sensor_status[i] };
+              var result = await Reservation.findOne({
+                spot_number: i + 1,
+              }).catch((e) => {
+                db_debug(e);
+              });
+              var status = result.status == "reserved" ? true : false;
+              obj.push({
+                spot_number: i + 1,
+                value: sensor_status[i],
+                reserved: status,
+              });
             }
             resolve();
           }
@@ -109,20 +117,27 @@ app.get("/sensorStatus", async (req, res) => {
       });
     });
   } catch (e) {
-    res.send({ error: "Sensors not responding" });
-    hw_debug("ESP failed to return sensor status");
+    hw_debug(`ESP failed to return sensor status ${e}`);
+    return res.status(500).send({
+      status: "failed",
+      message: "No Data from hardware",
+      error: "Sensors not responding",
+    });
   }
-  res.send(obj);
+  return res.send({ status: "ok", message: "Sensor status array", body: obj });
 });
 
-app.get("/reserve", async (req, res) => {
-  spot = req.query.spot;
-  time = req.query.time;
-  try {
-    var reserve_doc = await Reservation.find({ spot_number: spot });
-  } catch (ex) {
-    db_debug(ex);
+app.get("/reserve", auth, async (req, res) => {
+  var { spot } = req.query;
+  if (spot == null) {
+    return res.status(400).send({
+      status: "failed",
+      message: "spot parameter required",
+    });
   }
+  var reserve_doc = await Reservation.findOne({ spot_number: spot }).catch(
+    (ex) => db_debug(ex)
+  );
   if (reserve_doc.code != null) {
     return res.send({
       status: "reserved",
@@ -133,18 +148,65 @@ app.get("/reserve", async (req, res) => {
   var opr_res = await dropGates(spot);
   if (opr_res) {
     var code = generatecode();
-    try {
+    await Reservation.updateOne(
+      { spot_number: spot },
+      { $set: { status: "reserved", code: code } }
+    ).catch((e) => db_debug(e));
+
+    var millis = process.env.RESERVATION_EXPIRY * 60000;
+
+    res.send({ status: "ok", message: "Spot Reserved", code: code });
+
+    setTimeout(async () => {
       await Reservation.updateOne(
         { spot_number: spot },
-        { $set: { status: "reserved", code: code } }
-      );
-    } catch (ex) {
-      db_debug(ex);
-    }
-
-    //timeout to release reservation
-    res.send({ status: "ok", message: "Spot Reserved", code: code });
+        { $set: { status: "not-reserved", code: null } }
+      ).catch((e) => db_debug(e));
+      if (await raiseGates(spot)) {
+        server_debug("Reservation invoked due to timeout");
+      }
+    }, millis);
   }
+});
+
+app.get("/release", auth, async (req, res) => {
+  var { spot, code } = req.query;
+  if (spot == null) {
+    return res.status(400).send({
+      status: "failed",
+      message: "spot parameter required",
+    });
+  } else if (code == null) {
+    return res.status(400).send({
+      status: "failed",
+      message: "code parameter required",
+    });
+  }
+  var result = await Reservation.findOne({ spot_number: spot }).catch((e) =>
+    db_debug(e)
+  );
+  if (code == result.code) {
+    if (await raiseGates(spot)) {
+      await Reservation.updateOne(
+        { spot_number: spot },
+        {
+          $set: {
+            status: "not-reserved",
+            code: null,
+          },
+        }
+      ).catch((e) => db_debug(e));
+    }
+  } else {
+    return res.status(400).send({
+      status: "failed",
+      message: "invalid code",
+    });
+  }
+  return res.send({
+    status: "ok",
+    message: "spot Released",
+  });
 });
 
 // --------POST--------//
@@ -172,12 +234,14 @@ app.post("/login", async (req, res) => {
       }
     }
   } else {
+    server_debug("Missing params");
     return res.status(400).send({
       status: "failed",
       message: "Missing/Incorrect Parameters",
       body: val_res.error.details,
     });
   }
+  server_debug("Incorrect email/pass");
   return res.status(400).send({
     status: "failed",
     message: "Incorrect Email/Password",
@@ -203,13 +267,15 @@ app.post("/signup", async (req, res) => {
       .catch((ex) => {
         db_debug(ex);
         if (ex.dupData != null && ex.dupData == 1) {
-          res.status(409).send({
+          server_debug("Email already registered");
+          return res.status(409).send({
             status: "failed",
             message: "email already registered",
           });
         }
       });
   } else {
+    server_debug("Missing params");
     return res.status(400).send({
       status: "failed",
       message: "Missing/Incorrect Parameters",
