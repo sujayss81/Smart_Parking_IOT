@@ -17,10 +17,10 @@ class Networking {
       {@required String urlLabel, Map body}) async {
     String sendingBody = jsonEncode(body);
     print(sendingBody);
-    String token;
+    // String token;
     http.Response res = await http.post(Uri.parse('$hostUrl/$urlLabel'),
         body: sendingBody, headers: {'Content-Type': 'application/json'});
-    var resBodyString = jsonDecode(res.body);
+    // var resBodyString = jsonDecode(res.body);
     return res;
   }
 }

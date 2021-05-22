@@ -1,9 +1,31 @@
-import 'package:flutter/material.dart';
-import 'package:smart_parking_app/screens/homeScreen.dart';
-import 'package:smart_parking_app/screens/registrationScreen.dart';
+import 'dart:convert';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'package:smart_parking_app/screens/homePage.dart';
+import 'package:smart_parking_app/screens/loginScreen.dart';
+import 'package:smart_parking_app/screens/registrationScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:smart_parking_app/services/networking.dart';
+
+String token;
+Map body;
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  token = prefs.getString('token');
+  print(' void main token= $token');
+  if (token != null) {
+    getData();
+  }
   runApp(SmartParking());
+}
+
+void getData() async {
+  Networking net = Networking();
+  http.Response res =
+      await net.getRequest(urlLabel: 'me', token: token, params: '');
+  body = jsonDecode(res.body);
 }
 
 class SmartParking extends StatelessWidget {
@@ -11,10 +33,11 @@ class SmartParking extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // theme: ThemeData.light(),
-      initialRoute: HomeScreen.id,
+      home: (token == null) ? LoginScreen() : HomePage(body: body),
       routes: {
         RegistrationScreen.id: (context) => RegistrationScreen(),
-        HomeScreen.id: (context) => HomeScreen(),
+        LoginScreen.id: (context) => LoginScreen(),
+        HomePage.id: (context) => HomePage(),
       },
     );
   }

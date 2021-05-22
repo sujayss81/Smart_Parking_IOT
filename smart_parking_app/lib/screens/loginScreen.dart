@@ -3,18 +3,19 @@ import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:smart_parking_app/constants.dart';
+import 'package:smart_parking_app/screens/homePage.dart';
 import 'package:smart_parking_app/screens/registrationScreen.dart';
 import 'package:smart_parking_app/services/networking.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatefulWidget {
-  static const id = 'home_screen';
+class LoginScreen extends StatefulWidget {
+  static const id = 'login_screen';
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   String _email = '';
   String _password = '';
   final emailText = TextEditingController();
@@ -37,8 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Map body = {'email': _email, 'password': _password};
     // print(body);
     String token = prefs.getString('token');
-    // print(token);
-    prefs.clear();
+    print(token);
+    // prefs.clear();
     // String newTok = prefs.getString('token');
     // print('new token = $newTok');
     if (token == null) {
@@ -48,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
         print(token);
         print('hello');
         prefs.setString('token', token);
-        prefs.clear();
+        // prefs.clear();
         flag = false;
       } else if (res.statusCode == 400) {
         //add a toast specifying that username or password is incorrect
@@ -66,7 +67,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (res2.statusCode == 200) {
         // print(res2);
         print(res2.body);
+        String userDetails = res2.body;
+        print(userDetails);
         //write navigator push code here
+        Navigator.pushNamed(context, HomePage.id,
+            arguments: {body: userDetails});
       } else {
         print('server error');
         print(jsonDecode(res2.body));
