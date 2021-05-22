@@ -49,12 +49,13 @@ Slot s[] = {
 
 const char* ssid = "TP-Link_2.4";
 const char* pass = "tplink@2.4hz";
-const char* host = "192.168.0.106";
+const char* host = "192.168.0.104";
 
 int calculateDistance(int trig,int echo);
 void initPins();
 String readUltrasonic();
 String reserveSpot(int spotNumber);
+String releaseSpot(int spotNumber);
 void connectWifi();
 void checkWifi();
 void connectToServer();
@@ -134,6 +135,21 @@ String reserveSpot(int spotNumber){
     return "ok";
 }
 
+String releaseSpot(int spotNumber){
+  spotNumber = spotNumber -48; //ascii conversion
+  Serial.print("Releasing ");
+  Serial.println(spotNumber-1);
+  int actualSpot = spotNumber-1;
+  int grp = s[actualSpot].group;
+  if(grp == 1){
+    s[actualSpot].servo.write(90);
+  }
+  else{
+    s[actualSpot].servo.write(180);
+  }
+    return "ok";
+}
+
 void handleRequest(WiFiClient client,char com,char opt){
   Serial.print("Command : ");
   Serial.println(com);
@@ -144,6 +160,8 @@ void handleRequest(WiFiClient client,char com,char opt){
     case '1' : client.print(readUltrasonic());
                     break;
     case '2' : client.print(reserveSpot(opt));
+                break;
+    case '3' : client.print(releaseSpot(opt));
                 break;
     default: Serial.print("Invalid Request");
              client.println("Invalid Request"); 
