@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_parking_app/screens/loginScreen.dart';
+import 'package:cupertino_icons/cupertino_icons.dart';
 
 class DrawerScreen extends StatefulWidget {
   @override
@@ -57,7 +58,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.garage),
+              leading: Icon(Icons.inventory),
               title: Text('View Parking slots',
                   style: TextStyle(
                     color: Colors.grey[600],
