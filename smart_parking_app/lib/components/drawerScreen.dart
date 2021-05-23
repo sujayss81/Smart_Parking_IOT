@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_parking_app/screens/homePage.dart';
 import 'package:smart_parking_app/screens/loginScreen.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
 
 class DrawerScreen extends StatefulWidget {
+  final Map data;
+  DrawerScreen({this.data});
   @override
   _DrawerScreenState createState() => _DrawerScreenState();
 }
@@ -45,18 +48,24 @@ class _DrawerScreenState extends State<DrawerScreen> {
             ),
             SizedBox(height: 20),
             ListTile(
-              leading: Icon(
-                Icons.person,
-                // size: 30,
-              ),
-              title: Text(
-                'Profile',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 18,
+                leading: Icon(
+                  Icons.person,
+                  // size: 30,
                 ),
-              ),
-            ),
+                title: Text(
+                  'Profile',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 18,
+                  ),
+                ),
+                onTap: () {
+                  // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  //     builder: (context) => HomePage(
+                  //           body: widget.data,
+                  //         )));
+                  Navigator.pop(context);
+                }),
             ListTile(
               leading: Icon(Icons.inventory),
               title: Text('View Parking slots',

@@ -23,10 +23,28 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     initSharedPref();
   }
+  //
+  // void sharedPrefDemo() {
+  //   String token = prefs.getString('token');
+  //   print(token);
+  // }
 
-  void sharedPrefDemo() {
-    String token = prefs.getString('token');
-    print(token);
+  Widget getAvatar() {
+    Map userDetails = widget.body;
+    String gender = userDetails['gender'];
+    if (gender == 'male') {
+      return Image(
+        image: AssetImage('images/male.jpg'),
+        height: 190.0,
+        width: 200,
+      );
+    } else {
+      return Image(
+        image: AssetImage('images/female.jpg'),
+        height: 140.0,
+        width: 140,
+      );
+    }
   }
 
   @override
@@ -37,8 +55,22 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.blue,
       ),
-      drawer: DrawerScreen(),
-      body: Scaffold(),
+      drawer: DrawerScreen(data: userDetails),
+      body: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundColor: Color(0xFFF2F2F2),
+                child: getAvatar(),
+                radius: 100,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
