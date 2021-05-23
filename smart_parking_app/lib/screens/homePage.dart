@@ -4,9 +4,8 @@ import 'package:smart_parking_app/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
+  final Map body;
   HomePage({this.body});
-  Map body;
-
   static const id = 'home_page';
   @override
   _HomePageState createState() => _HomePageState();
@@ -14,6 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   SharedPreferences prefs;
+  Map userDetails;
   void initSharedPref() async {
     prefs = await SharedPreferences.getInstance();
     // sharedPrefDemo();
@@ -31,13 +31,14 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.body);
-
+    userDetails = widget.body;
+    print('This is from homePage = ${widget.body}');
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
       ),
       drawer: DrawerScreen(),
+      body: Scaffold(),
     );
   }
 }

@@ -10,18 +10,19 @@ import 'package:smart_parking_app/services/networking.dart';
 
 String token;
 Map body;
+Map userDetails;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   token = prefs.getString('token');
   print(' void main token= $token');
   if (token != null) {
-    getData();
+    await getData();
   }
   runApp(SmartParking());
 }
 
-void getData() async {
+Future<void> getData() async {
   Networking net = Networking();
   http.Response res =
       await net.getRequest(urlLabel: 'me', token: token, params: '');
@@ -33,7 +34,7 @@ class SmartParking extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // theme: ThemeData.light(),
-      home: (token == null) ? LoginScreen() : HomePage(body: body),
+      home: (token == null) ? LoginScreen() : HomePage(body: body['body']),
       routes: {
         RegistrationScreen.id: (context) => RegistrationScreen(),
         LoginScreen.id: (context) => LoginScreen(),

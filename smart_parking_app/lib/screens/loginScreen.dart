@@ -66,12 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
           await net.getRequest(urlLabel: 'me', token: token, params: '');
       if (res2.statusCode == 200) {
         // print(res2);
-        print(res2.body);
-        String userDetails = res2.body;
-        print(userDetails);
-        //write navigator push code here
-        Navigator.pushNamed(context, HomePage.id,
-            arguments: {body: userDetails});
+        // print(res2.body);
+        var body = jsonDecode(res2.body);
+        print(body);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => HomePage(body: body['body'])));
       } else {
         print('server error');
         print(jsonDecode(res2.body));
