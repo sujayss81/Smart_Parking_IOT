@@ -4,6 +4,7 @@ import 'package:smart_parking_app/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_parking_app/screens/homePage.dart';
 import 'dart:convert';
 import 'package:smart_parking_app/services/networking.dart';
 
@@ -66,8 +67,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           urlLabel: 'me', token: token, params: '');
       if (res2.statusCode == 200) {
         // print(res2);
-        print(res2.body);
+        // print(res2.body);
+        // String userDetails = res2.body;
         //write navigator push code here
+        var body = jsonDecode(res2.body);
+        print(body);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => HomePage(body: body['body'])));
       } else {
         print('server error');
         print(jsonDecode(res2.body));
