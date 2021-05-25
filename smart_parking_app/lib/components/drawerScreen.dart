@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_parking_app/screens/homePage.dart';
 import 'package:smart_parking_app/screens/loginScreen.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
+import 'package:smart_parking_app/screens/parkingSlots.dart';
 
 class DrawerScreen extends StatefulWidget {
   final Map data;
@@ -73,6 +74,10 @@ class _DrawerScreenState extends State<DrawerScreen> {
                     color: Colors.grey[600],
                     fontSize: 18,
                   )),
+              onTap: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => ParkingSlots()));
+              },
             ),
             ListTile(
               leading: Icon(Icons.power_settings_new_rounded),

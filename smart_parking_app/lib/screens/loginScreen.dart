@@ -44,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // print('new token = $newTok');
     if (token == null) {
       http.Response res = await net.postRequest(urlLabel: 'login', body: body);
+      print('from login page=$res');
       if (res.statusCode == 200) {
         token = res.headers['x-auth-token'];
         print(token);
