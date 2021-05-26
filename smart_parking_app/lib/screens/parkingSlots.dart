@@ -51,9 +51,9 @@ class _ParkingSlotsState extends State<ParkingSlots> {
 
   void dynamicUpdate() {
     getData();
-    Timer.periodic(Duration(seconds: 5), (timer) {
+    widget.timer = Timer.periodic(Duration(seconds: 5), (timer) {
       getData();
-      widget.timer = timer;
+      // widget.timer = timer;
       print('Running');
     });
   }
@@ -63,6 +63,13 @@ class _ParkingSlotsState extends State<ParkingSlots> {
     // TODO: implement initState
     super.initState();
     dynamicUpdate();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    widget.timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -117,9 +124,9 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                         color: slotsColor[2]),
                   ),
                   onTap: () {
-                    setState(() {
-                      slot1Color = kParked;
-                    });
+                    // setState(() {
+                    //   slot1Color = kParked;
+                    // });
                   },
                 ),
                 SizedBox(
