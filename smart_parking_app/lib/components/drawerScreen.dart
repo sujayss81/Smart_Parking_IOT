@@ -61,11 +61,11 @@ class _DrawerScreenState extends State<DrawerScreen> {
                   ),
                 ),
                 onTap: () {
-                  // Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  //     builder: (context) => HomePage(
-                  //           body: widget.data,
-                  //         )));
-                  Navigator.pop(context);
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => HomePage(
+                            body: widget.data,
+                          )));
+                  // Navigator.pop(context);
                 }),
             ListTile(
               leading: Icon(Icons.inventory),
@@ -75,8 +75,8 @@ class _DrawerScreenState extends State<DrawerScreen> {
                     fontSize: 18,
                   )),
               onTap: () {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => ParkingSlots()));
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => ParkingSlots(body: widget.data)));
               },
             ),
             ListTile(
@@ -90,7 +90,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
               ),
               onTap: () {
                 prefs.remove('token');
-                Navigator.pushNamed(context, LoginScreen.id);
+                Navigator.pushReplacementNamed(context, LoginScreen.id);
               },
             ),
           ],

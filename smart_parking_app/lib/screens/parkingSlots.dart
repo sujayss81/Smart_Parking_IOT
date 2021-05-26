@@ -1,21 +1,79 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:smart_parking_app/constants.dart';
+import 'package:smart_parking_app/components/drawerScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_parking_app/services/networking.dart';
+import 'package:http/http.dart' as http;
 
 class ParkingSlots extends StatefulWidget {
+  ParkingSlots({this.body});
+  final Map body;
+  Timer timer;
   @override
   _ParkingSlotsState createState() => _ParkingSlotsState();
 }
 
 class _ParkingSlotsState extends State<ParkingSlots> {
-  Color slot1Color = kAvailable;
-  Color slot2Color = kAvailable;
-  Color slot3Color = kAvailable;
-  Color slot4color = kAvailable;
-  Color slot5color = kAvailable;
+  List<Color> slotsColor = [
+    kAvailable,
+    kAvailable,
+    kAvailable,
+    kAvailable,
+    kAvailable
+  ];
+  SharedPreferences prefs;
+  Networking net = Networking();
+
+  void getData() async {
+    prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token');
+    http.Response res =
+        await net.getRequest(urlLabel: 'test', token: token, params: '');
+    var details = jsonDecode(res.body)['body'];
+    updateState(details);
+  }
+
+  void updateState(var details) {
+    for (int i = 0; i < 5; i++) {
+      slotsColor[i] = details[i]['reserved']
+          ? kReserved
+          : details[i]['value']
+              ? kParked
+              : kAvailable;
+      print(' slot $i = ${slotsColor[i]}');
+    }
+    setState(() {});
+  }
+
+  void dynamicUpdate() {
+    getData();
+    Timer.periodic(Duration(seconds: 5), (timer) {
+      getData();
+      widget.timer = timer;
+      print('Running');
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    dynamicUpdate();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: kPageBackground,
+      ),
+      drawer: DrawerScreen(
+        data: widget.body,
+      ),
       backgroundColor: kPageBackground,
       body: SafeArea(
         child: Column(
@@ -55,8 +113,8 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                   child: Container(
                     width: 120,
                     height: 80,
-                    decoration:
-                        kParkingLotSlotLeftDesign.copyWith(color: slot1Color),
+                    decoration: kParkingLotSlotLeftDesign.copyWith(
+                        color: slotsColor[2]),
                   ),
                   onTap: () {
                     setState(() {
@@ -71,7 +129,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                   width: 120,
                   height: 80,
                   decoration:
-                      kParkingLotSlotRightDesign.copyWith(color: slot4color),
+                      kParkingLotSlotRightDesign.copyWith(color: slotsColor[1]),
                 ),
               ],
             ),
@@ -84,7 +142,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                   width: 120,
                   height: 80,
                   decoration:
-                      kParkingLotSlotLeftDesign.copyWith(color: slot2Color),
+                      kParkingLotSlotLeftDesign.copyWith(color: slotsColor[3]),
                 ),
                 SizedBox(
                   width: 100,
@@ -93,7 +151,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                   width: 120,
                   height: 80,
                   decoration:
-                      kParkingLotSlotRightDesign.copyWith(color: slot5color),
+                      kParkingLotSlotRightDesign.copyWith(color: slotsColor[0]),
                 ),
               ],
             ),
@@ -106,7 +164,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                   width: 120,
                   height: 80,
                   decoration:
-                      kParkingLotSlotLeftDesign.copyWith(color: slot3Color),
+                      kParkingLotSlotLeftDesign.copyWith(color: slotsColor[4]),
                 ),
                 SizedBox(
                   width: 100,
