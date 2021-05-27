@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:smart_parking_app/screens/homePage.dart';
 import 'package:smart_parking_app/screens/loginScreen.dart';
+import 'package:smart_parking_app/screens/paymentScreen.dart';
 import 'package:smart_parking_app/screens/registrationScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:smart_parking_app/services/networking.dart';
+import 'package:smart_parking_app/screens/paymentScreen.dart';
 
 String token;
 Map body;

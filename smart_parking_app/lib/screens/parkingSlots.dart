@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_parking_app/constants.dart';
 import 'package:smart_parking_app/components/drawerScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_parking_app/screens/paymentScreen.dart';
 import 'package:smart_parking_app/services/networking.dart';
 import 'package:http/http.dart' as http;
 
@@ -124,19 +125,26 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                         color: slotsColor[2]),
                   ),
                   onTap: () {
-                    // setState(() {
-                    //   slot1Color = kParked;
-                    // });
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return Payment();
+                    }),);
                   },
                 ),
                 SizedBox(
                   width: 100,
                 ),
-                Container(
-                  width: 120,
-                  height: 80,
-                  decoration:
-                      kParkingLotSlotRightDesign.copyWith(color: slotsColor[1]),
+                GestureDetector(
+                  child: Container(
+                    width: 120,
+                    height: 80,
+                    decoration:
+                        kParkingLotSlotRightDesign.copyWith(color: slotsColor[1]),
+                  ),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return Payment();
+                    }),);
+                  },
                 ),
               ],
             ),
@@ -145,20 +153,34 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                 SizedBox(
                   width: 30,
                 ),
-                Container(
-                  width: 120,
-                  height: 80,
-                  decoration:
-                      kParkingLotSlotLeftDesign.copyWith(color: slotsColor[3]),
+                GestureDetector(
+                  child: Container(
+                    width: 120,
+                    height: 80,
+                    decoration:
+                        kParkingLotSlotLeftDesign.copyWith(color: slotsColor[3]),
+                  ),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return Payment();
+                    }),);
+                  },
                 ),
                 SizedBox(
                   width: 100,
                 ),
-                Container(
-                  width: 120,
-                  height: 80,
-                  decoration:
-                      kParkingLotSlotRightDesign.copyWith(color: slotsColor[0]),
+                GestureDetector(
+                  child: Container(
+                    width: 120,
+                    height: 80,
+                    decoration:
+                        kParkingLotSlotRightDesign.copyWith(color: slotsColor[0]),
+                  ),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return Payment();
+                    }),);
+                  },
                 ),
               ],
             ),
@@ -167,11 +189,18 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                 SizedBox(
                   width: 30,
                 ),
-                Container(
-                  width: 120,
-                  height: 80,
-                  decoration:
-                      kParkingLotSlotLeftDesign.copyWith(color: slotsColor[4]),
+                GestureDetector(
+                  child: Container(
+                    width: 120,
+                    height: 80,
+                    decoration:
+                        kParkingLotSlotLeftDesign.copyWith(color: slotsColor[4]),
+                  ),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return Payment();
+                    }),);
+                  },
                 ),
                 SizedBox(
                   width: 100,
