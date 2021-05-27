@@ -1,8 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_parking_app/constants.dart';
+import 'package:http/http.dart' as http;
+import 'package:smart_parking_app/services/networking.dart';
 
 class Payment extends StatefulWidget {
+  Payment({this.slotNum});
+  final int slotNum;
   String name = '';
   int cardNo;
 
@@ -12,12 +19,29 @@ class Payment extends StatefulWidget {
 
 class _PaymentState extends State<Payment> {
   String name = '';
+  Networking net = Networking();
+  SharedPreferences prefs;
+  final _formKey = GlobalKey<FormState>();
+
+  void initSharedPref() async {
+    prefs = await SharedPreferences.getInstance();
+  }
+
+  void initState() {
+    super.initState();
+    initSharedPref();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.blue,
+        ),
         body: SingleChildScrollView(
           child: Form(
+            key: _formKey,
             child: Column(
               children: [
                 Padding(
@@ -153,14 +177,40 @@ class _PaymentState extends State<Payment> {
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: ElevatedButton(
-                      onPressed: (){},
-                      child: Text(
-                        'Pay Now',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    onPressed: () async {
+                      if (true) {
+                        String token = prefs.getString('token');
+                        http.Response res = await net.getRequest(
+                            urlLabel: 'reserve',
+                            token: token,
+                            params: 'spot=${widget.slotNum}');
+                        if (res.statusCode == 200) {
+                          var body = jsonDecode(res.body);
+                          print(body);
+                          showDialog<String>(
+                            context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text('Reserved'),
+                              content: Text(
+                                  'Your code for the parking spot is ${body['code']}'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: Text(
+                      'Pay Now',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
                   ),
                 ),
               ],

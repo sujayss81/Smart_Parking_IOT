@@ -4,7 +4,7 @@ const hostUrl = 'http://sujayhome.ddns.net:4000';
 
 //parking slot colors
 const kAvailable = Colors.green;
-const kReserved = Colors.yellow;
+const kReserved = Colors.amberAccent;
 const kParked = Colors.red;
 const kPageBackground = Color(0xff1A1C22);
 
