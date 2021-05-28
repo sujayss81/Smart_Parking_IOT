@@ -5,6 +5,7 @@ const server_debug = require("debug")("server");
 const db_debug = require("debug")("database");
 //model imports
 const User = require("../model/user");
+const Order = require("../model/order");
 //custom functions
 const { encrypt, compareHash } = require("../utility/hashing");
 const { signupSchema, loginSchema } = require("../utility/validator");
@@ -24,6 +25,15 @@ const me = async (req, res) => {
     return res.send({ status: "failed", message: "User Profile not found" });
   }
   res.send({ status: "ok", message: "User Profile", body: result });
+};
+
+const myOrders = async (req, res) => {
+  var { email } = req.body.decoded;
+  var result = await Order.find({ email: email })
+    .sort({ createdAt: 1 })
+    .select(["-_id", "-__v", "-email", "-updatedAt"])
+    .catch((ex) => db_debug(ex));
+  res.send({ status: "ok", message: "User Order list", body: result });
 };
 
 const login = async (req, res) => {
@@ -99,4 +109,4 @@ const signup = async (req, res) => {
   }
 };
 
-module.exports = { me, login, signup };
+module.exports = { me, myOrders, login, signup };

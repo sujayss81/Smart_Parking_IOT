@@ -10,14 +10,12 @@ const app = express();
 
 //debuggers
 const server_debug = require("debug")("server");
-const db_debug = require("debug")("database");
-const hw_debug = require("debug")("hardware");
 
 //custom functions
 const connectDb = require("./utility/connectToDatabase");
 
 //Controllers
-const { me, login, signup } = require("./controller/userController");
+const { me, login, signup, myOrders } = require("./controller/userController");
 const {
   sensorStatus,
   reserve,
@@ -66,6 +64,8 @@ app.get("/test", auth, (req, res) => {
 });
 
 app.get("/me", auth, me);
+
+app.get("/myorders", auth, myOrders);
 
 app.get("/sensorStatus", auth, sensorStatus);
 

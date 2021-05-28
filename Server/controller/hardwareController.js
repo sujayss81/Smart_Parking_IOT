@@ -1,5 +1,6 @@
 //model imports
 const Reservation = require("../model/reservation");
+const Order = require("../model/order");
 
 //debuggers
 const db_debug = require("debug")("database");
@@ -58,6 +59,7 @@ const sensorStatus = async (req, res) => {
 };
 
 const reserve = async (req, res) => {
+  var email = req.body.decoded.email;
   var { spot } = req.query;
   if (spot == null) {
     return res.status(400).send({
@@ -82,7 +84,12 @@ const reserve = async (req, res) => {
       { spot_number: spot },
       { $set: { status: "reserved", code: code } }
     ).catch((e) => db_debug(e));
-
+    var order = new Order({
+      email: email,
+      spot_number: spot,
+      code: code,
+    });
+    await order.save().catch((ex) => db_debug(ex));
     var millis = process.env.RESERVATION_EXPIRY * 60000;
 
     res.send({ status: "ok", message: "Spot Reserved", code: code });
