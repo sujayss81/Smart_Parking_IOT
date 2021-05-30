@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   Widget getAvatar() {
     userDetails = widget.body;
     String gender = userDetails['gender'];
-    if (gender == 'male') {
+    if (gender.toLowerCase() == 'male') {
       return Image(
         image: AssetImage('images/male.jpg'),
         height: 140.0,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_parking_app/screens/allBookings.dart';
 import 'package:smart_parking_app/screens/homePage.dart';
 import 'package:smart_parking_app/screens/loginScreen.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
@@ -77,6 +78,22 @@ class _DrawerScreenState extends State<DrawerScreen> {
               onTap: () {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (context) => ParkingSlots(body: widget.data)));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.list_alt),
+              title: Text(
+                'My Bookings',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => BookingScreen(
+                          body: widget.data,
+                        )));
               },
             ),
             ListTile(
