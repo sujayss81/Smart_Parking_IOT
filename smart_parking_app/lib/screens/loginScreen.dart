@@ -36,24 +36,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void loginUser() async {
     Map body = {'email': _email, 'password': _password};
-    // print(body);
+
     String token = prefs.getString('token');
-    print(token);
-    // prefs.clear();
-    // String newTok = prefs.getString('token');
-    // print('new token = $newTok');
+
+
     if (token == null) {
       http.Response res = await net.postRequest(urlLabel: 'login', body: body);
-      print('from login page=$res');
+
       if (res.statusCode == 200) {
         token = res.headers['x-auth-token'];
-        print(token);
-        print('hello');
+
         prefs.setString('token', token);
-        // prefs.clear();
+
         flag = false;
       } else if (res.statusCode == 400) {
         //add a toast specifying that username or password is incorrect
+        showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Authentication failed'),
+            content: const Text(
+                'Invalid login credentials '),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+
+            ],
+          ),
+        );
         flag = true;
         print('Authentication failed');
       } else {

@@ -16,18 +16,13 @@ class _HomePageState extends State<HomePage> {
   Map userDetails;
   void initSharedPref() async {
     prefs = await SharedPreferences.getInstance();
-    // sharedPrefDemo();
   }
 
   void initState() {
     super.initState();
     initSharedPref();
   }
-  //
-  // void sharedPrefDemo() {
-  //   String token = prefs.getString('token');
-  //   print(token);
-  // }
+
 
   Widget getAvatar() {
     userDetails = widget.body;
@@ -50,7 +45,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     userDetails = widget.body;
-    print('This is from homePage = ${widget.body}');
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.blue,

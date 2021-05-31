@@ -17,7 +17,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   token = prefs.getString('token');
-  print(' void main token= $token');
   if (token != null) {
     await getData();
   }
@@ -35,6 +34,7 @@ class SmartParking extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       // theme: ThemeData.light(),
       home: (token == null) ? LoginScreen() : HomePage(body: body['body']),
       routes: {
