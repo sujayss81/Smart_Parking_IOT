@@ -23,7 +23,6 @@ class _HomePageState extends State<HomePage> {
     initSharedPref();
   }
 
-
   Widget getAvatar() {
     userDetails = widget.body;
     String gender = userDetails['gender'];
@@ -47,13 +46,17 @@ class _HomePageState extends State<HomePage> {
     userDetails = widget.body;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue[200],
         appBar: AppBar(
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.blueAccent,
+          title: Text(
+            'Smart Parking',
+            style: TextStyle(fontSize: 18),
+          ),
         ),
         drawer: DrawerScreen(data: userDetails),
         body: Card(
-          color: Colors.blue,
+          color: Colors.blue[200],
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[

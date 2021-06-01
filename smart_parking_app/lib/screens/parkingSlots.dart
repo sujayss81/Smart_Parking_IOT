@@ -242,6 +242,59 @@ class _ParkingSlotsState extends State<ParkingSlots> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      color: kAvailable,
+                      height: 15,
+                      width: 15,
+                    ),
+                    Text(
+                      ' - Available',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Container(
+                      color: kReserved,
+                      height: 15,
+                      width: 15,
+                    ),
+                    Text(
+                      ' - Reserved',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Container(
+                      color: kParked,
+                      height: 15,
+                      width: 15,
+                    ),
+                    Text(
+                      ' - Parked',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 40,
+            ),
+            Row(
               children: [
                 SizedBox(
                   width: 30,
