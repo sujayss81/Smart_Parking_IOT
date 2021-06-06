@@ -40,7 +40,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
     prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token');
     http.Response res =
-        await net.getRequest(urlLabel: 'test', token: token, params: '');
+        await net.getRequest(urlLabel: 'sensorstatus', token: token, params: '');
     var details = jsonDecode(res.body)['body'];
     updateState(details);
   }
@@ -59,7 +59,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
 
   void dynamicUpdate() {
     getData();
-    widget.timer = Timer.periodic(Duration(seconds: 5), (timer) {
+    widget.timer = Timer.periodic(Duration(seconds: 2), (timer) {
       getData();
       // widget.timer = timer;
       // print('Running');

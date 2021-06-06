@@ -195,7 +195,9 @@ class _PaymentState extends State<Payment> {
                                   'Your code for the parking spot is ${body['code']}'),
                               actions: <Widget>[
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  onPressed: () { Navigator.pop(context, 'OK');
+                                    Navigator.pop(context);
+                                  },
                                   child: const Text('OK'),
                                 ),
                               ],
