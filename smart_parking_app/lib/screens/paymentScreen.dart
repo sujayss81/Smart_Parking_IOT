@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_parking_app/constants.dart';
 import 'package:http/http.dart' as http;
+import 'package:smart_parking_app/screens/parkingSlots.dart';
 import 'package:smart_parking_app/services/networking.dart';
 
 class Payment extends StatefulWidget {
-  Payment({this.slotNum});
+  Payment({this.slotNum, this.body});
   final int slotNum;
+  final Map body;
   String name = '';
   int cardNo;
 
@@ -195,8 +197,16 @@ class _PaymentState extends State<Payment> {
                                   'Your code for the parking spot is ${body['code']}'),
                               actions: <Widget>[
                                 TextButton(
-                                  onPressed: () { Navigator.pop(context, 'OK');
-                                    Navigator.pop(context);
+                                  onPressed: () {
+                                    Navigator.pop(context, 'OK');
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) {
+                                        return ParkingSlots(
+                                          body: widget.body,
+                                        );
+                                      }),
+                                    );
                                   },
                                   child: const Text('OK'),
                                 ),

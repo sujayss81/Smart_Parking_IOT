@@ -39,10 +39,11 @@ class _ParkingSlotsState extends State<ParkingSlots> {
   void getData() async {
     prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token');
-    http.Response res =
-        await net.getRequest(urlLabel: 'sensorstatus', token: token, params: '');
+    http.Response res = await net.getRequest(
+        urlLabel: 'sensorstatus', token: token, params: '');
     var details = jsonDecode(res.body)['body'];
     updateState(details);
+    print('from getData');
   }
 
   void updateState(var details) {
@@ -59,7 +60,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
 
   void dynamicUpdate() {
     getData();
-    widget.timer = Timer.periodic(Duration(seconds: 2), (timer) {
+    widget.timer = Timer.periodic(Duration(seconds: 1), (timer) {
       getData();
       // widget.timer = timer;
       // print('Running');
@@ -84,11 +85,13 @@ class _ParkingSlotsState extends State<ParkingSlots> {
             ),
             TextButton(
               onPressed: () {
+                Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) {
                     return Payment(
                       slotNum: slotNum,
+                      body: widget.body,
                     );
                   }),
                 );
@@ -100,6 +103,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
         ),
       );
     } else if (color == kReserved) {
+      widget.timer.cancel();
       showDialog<String>(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -149,6 +153,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
                         actions: <Widget>[
                           TextButton(
                             onPressed: () {
+                              dynamicUpdate();
                               Navigator.pop(context, 'OK');
                             },
                             child: const Text('OK'),
@@ -216,6 +221,7 @@ class _ParkingSlotsState extends State<ParkingSlots> {
     // TODO: implement initState
     super.initState();
     initSharedPref();
+    getData();
     dynamicUpdate();
   }
 
@@ -231,6 +237,17 @@ class _ParkingSlotsState extends State<ParkingSlots> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPageBackground,
+        actions: [
+          MaterialButton(
+            onPressed: () {
+              getData();
+            },
+            child: Icon(
+              Icons.refresh,
+              color: Colors.white,
+            ),
+          )
+        ],
       ),
       drawer: DrawerScreen(
         data: widget.body,
