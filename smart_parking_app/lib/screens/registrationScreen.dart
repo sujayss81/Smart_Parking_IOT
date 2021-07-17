@@ -56,7 +56,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       token = res.headers['x-auth-token'];
       print(token);
       prefs.setString('token', token);
-      prefs.clear();
     }else {
       print('server error');
       flag = true;
