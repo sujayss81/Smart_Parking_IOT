@@ -4,6 +4,7 @@
 #include<String.h>
 WiFiClient client;
 Servo s1,s2,s3,s4,s5;
+Servo mainGate;
 
 class Slot{ 
   public:
@@ -29,7 +30,7 @@ const int servoPin17 = 17;
 
 const int trigPin13 = 13;
 const int echoPin36 = 36;
-const int servoPin18 = 18;
+const int servoPin22 = 22;
 
 const int trigPin14 = 14;
 const int echoPin39 = 39;
@@ -39,17 +40,21 @@ const int trigPin15 = 15;
 const int echoPin18 = 18;
 const int servoPin21 = 21;
 
+const int mainGatePin = 27;
+const int entryIR = 26;
+const int exitIR = 25;
+
 Slot s[] = {
   Slot(trigPin4,echoPin34,servoPin16,1),
   Slot(trigPin5,echoPin35,servoPin17,1),
-  Slot(trigPin13,echoPin36,servoPin18,2),
+  Slot(trigPin13,echoPin36,servoPin22,2),
   Slot(trigPin14,echoPin39,servoPin19,2),
   Slot(trigPin15,echoPin18,servoPin21,2)
   };
 
 const char* ssid = "TP-Link_2.4";
 const char* pass = "tplink@2.4hz";
-const char* host = "192.168.0.104";
+const char* host = "192.168.0.105";
 
 int calculateDistance(int trig,int echo);
 void initPins();
@@ -64,7 +69,8 @@ void mainProcess(WiFiClient client);
 String getCommand(String s);
 String getOption(String s);
 void handleRequest(WiFiClient client,char com,char opt);
-
+int isLotFull();
+void autoGates();
 
 void setup() {
   Serial.begin(9600);
@@ -97,9 +103,52 @@ void connectToServer()
   mainProcess(client);
 }
 
+int isLotFull(){
+  int i;
+  for(i=0;i<5;i++)
+  {
+    s[i].dist = calculateDistance(s[i].trig,s[i].echo);
+    if(s[i].dist > 0 && s[i].dist <5){
+      continue;
+    }
+    break;
+  }
+  if(i == 5)
+  {
+    return 1;
+  }
+  return 0;
+}
+
+void autoGates(){
+  int entryStatus = !digitalRead(entryIR);
+  int exitStatus = !digitalRead(exitIR);
+  Serial.println("IR Status");
+  Serial.println(entryStatus);
+  Serial.println(exitStatus);
+  if(entryStatus){
+    if(!isLotFull()){
+      mainGate.write(180);
+      Serial.println("Raising barrier for entry");
+      delay(2000);
+      mainGate.write(90);
+    }
+  }
+  else{
+    if(exitStatus){
+      mainGate.write(180);
+      Serial.println("Raising barrier for exit");
+      delay(2000);
+      mainGate.write(90);
+    }
+  }
+  
+}
+
 void mainProcess(WiFiClient client){
   while(1)
   {
+    autoGates();
     String dat = "";
     while(client.available())
     {
@@ -177,7 +226,7 @@ String readUltrasonic(){
   {
     s[i].dist = calculateDistance(s[i].trig,s[i].echo);
   }
-
+  
   String r="";
   r+=s[0].dist;
   for(int i=1;i<5;i++)
@@ -193,8 +242,14 @@ String readUltrasonic(){
 void initPins(){
   Serial.println("Initializing Componenets");
   pinMode(2,OUTPUT);
-
+  mainGate.attach(mainGatePin);
+  mainGate.write(180);
+  delay(1000);
+  mainGate.write(90);
+  pinMode(entryIR,INPUT);
+  pinMode(exitIR,INPUT);
   for(int i=0;i<5;i++){
+    Serial.print("*");
     pinMode(s[i].trig,OUTPUT);
     pinMode(s[i].echo,INPUT);
     if(s[i].group == 1){
@@ -205,17 +260,18 @@ void initPins(){
       s[i].servo.write(90);
     }
     else{
-      s[i].servo.write(0);
+      s[i].servo.write(180);
       delay(1000);
       s[i].servo.write(90);
       delay(1000);
-      s[i].servo.write(0);
+      s[i].servo.write(180);
     }
   }
+  Serial.println();
+  Serial.println("Init Complete");
 }
 
 int calculateDistance(int trig,int echo){
-  
   digitalWrite(trig,LOW);
   delayMicroseconds(2);
   digitalWrite(trig, HIGH);
@@ -223,7 +279,7 @@ int calculateDistance(int trig,int echo){
   digitalWrite(trig, LOW);
   
   long duration = pulseIn(echo, HIGH);
-  
+
   return (int)(duration*0.034/2);
   
 }

@@ -30,10 +30,15 @@ const me = async (req, res) => {
 const myOrders = async (req, res) => {
   var { email } = req.body.decoded;
   var result = await Order.find({ email: email })
-    .sort({ createdAt: 1 })
-    .select(["-_id", "-__v", "-email", "-updatedAt"])
+    .sort({ createdAt: -1 })
+    .select(["-_id", "-__v", "-email"])
     .catch((ex) => db_debug(ex));
-  res.send({ status: "ok", message: "User Order list", body: result });
+  res.send({
+    status: "ok",
+    message: "User Order list",
+    body: result,
+    count: result.length,
+  });
 };
 
 const login = async (req, res) => {

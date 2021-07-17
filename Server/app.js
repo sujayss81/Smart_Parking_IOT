@@ -41,6 +41,10 @@ const corsOpts = {
 };
 app.use(cors(corsOpts));
 
+//Routers
+const { admin } = require("./router/admin");
+app.use("/admin", admin);
+
 //-------------------------------------ROUTES-----------------------------------//
 // -------GET-------//
 

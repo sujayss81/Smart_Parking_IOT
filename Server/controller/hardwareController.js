@@ -5,6 +5,7 @@ const Order = require("../model/order");
 //debuggers
 const db_debug = require("debug")("database");
 const hw_debug = require("debug")("hardware");
+const server_debug = require("debug")("server");
 
 //custom functions
 const { dropGates, raiseGates } = require("../utility/gateControl");
@@ -133,6 +134,10 @@ const release = async (req, res) => {
           },
         }
       ).catch((e) => db_debug(e));
+      return res.send({
+        status: "ok",
+        message: "spot Released",
+      });
     }
   } else {
     return res.status(400).send({
@@ -140,10 +145,6 @@ const release = async (req, res) => {
       message: "invalid code",
     });
   }
-  return res.send({
-    status: "ok",
-    message: "spot Released",
-  });
 };
 
 module.exports = { sensorStatus, reserve, release };
